@@ -5,36 +5,33 @@ using UnityEngine.Networking;
 
 public class Combat : NetworkBehaviour {
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
-
     public const int maxHealth = 100;
+    public bool destroyOnDeath;
+
     [SyncVar]
     public int health = maxHealth;
 
     public void TakeDamage(int amount)
     {
-        Debug.Log("health = " + health);
         if (!isServer)
             return;
 
         health -= amount;
         if (health <= 0)
         {
-            health = maxHealth;
-            RpcRespawn();
+            if (destroyOnDeath)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                health = maxHealth;
+
+                // called on the server, will be invoked on the clients
+                RpcRespawn();
+            }
         }
     }
-
-
 
     [ClientRpc]
     void RpcRespawn()
